@@ -1,52 +1,55 @@
-import { SUMMARY_URL } from "../constants";
+import { CovidDashBoardApiService } from "./covid-dashboard-api.service";
+import { mapSummaryCountries, mapDayOneCountry } from "./utils/index";
 
 export class CovidDashboardService {
-    static getData() {
-        return fetch(SUMMARY_URL)
-            .then((res) => this.getStatus(res))
-            .catch((err) => err);
+    constructor() {
+        this.apiService = new CovidDashBoardApiService();
     }
 
-    static getStatus(res) {
-        return res?.status >= 200 && res?.status < 300 ? res?.json() : undefined;
-    }
+    /**
+     * A summary of new and total cases per country updated daily.
+     */
+    getSummary() {
+        return this.apiService.getSummary().then((res) => {
+            const global = {
+                newConfirmed: res?.Global?.NewConfirmed,
+                newDeaths: res?.Global?.NewDeaths,
+                newRecovered: res?.Global?.NewRecovered,
+                totalConfirmed: res?.Global?.TotalConfirmed,
+                totalDeaths: res?.Global?.TotalDeaths,
+                totalRecovered: res?.Global?.TotalRecovered
+            };
 
-    static async getCountries() {
-        const data = await this.getData().then((res) => res?.Countries);
-
-        return data?.map((res) => {
             return {
-                country: res?.Country,
-                code: res?.CountryCode,
+                countries: mapSummaryCountries(res?.Countries),
+                global,
                 date: res?.Date,
-                newConfirmed: res?.NewConfirmed,
-                newDeaths: res?.NewDeaths,
-                newRecovered: res?.NewRecovered,
-                premium: res?.Premium,
-                slug: res?.Slug,
-                totalConfirmed: res?.TotalConfirmed,
-                totalDeaths: res?.TotalDeaths,
-                totalRecovered: res?.TotalRecovered
+                message: res?.Message
             };
         });
     }
 
-    static async getDate() {
-        const data = await this.getData().then((res) => res?.Date);
-
-        return data;
+    /**
+     * Returns all the available countries and provinces, as well as the country slug for per country requests.
+     */
+    getCountries() {
+        return this.apiService.getCountries().then((res) => {
+            return res?.map((data) => {
+                return {
+                    country: data?.Country,
+                    iso: data?.ISO2,
+                    slug: data?.Slug
+                };
+            });
+        });
     }
 
-    static async getGlobal() {
-        const data = await this.getData().then((res) => res?.Global);
-
-        return {
-            newConfirmed: data?.NewConfirmed,
-            newDeaths: data?.NewDeaths,
-            newRecovered: data?.NewRecovered,
-            totalConfirmed: data?.TotalConfirmed,
-            totalDeaths: data?.TotalDeaths,
-            totalRecovered: data?.TotalRecovered
-        };
+    /**
+     * Returns all cases by case type for a country from the first recorded case.
+     * Country must be the Slug from /countries or /summary.
+     * Cases must be one of: confirmed, recovered, deaths
+     */
+    getDayOne(countryName) {
+        return this.apiService.getDayOne(countryName).then((res) => mapDayOneCountry(res));
     }
 }

@@ -4,10 +4,12 @@ import { Chart } from "./chart/index";
 export class CountryList {
     constructor() {
         this.chart = new Chart();
+        this.service = new CovidDashboardService();
     }
 
     init() {
-        CovidDashboardService.getCountries().then((data) => this.viewData(data));
+        const value = "belarus";
+        this.service.getDayOne(value).then((data) => this.viewData(data));
     }
 
     viewData(data) {
