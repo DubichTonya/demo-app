@@ -10,3 +10,10 @@ countryList.init();
 graph.init();
 table.init();
 wordMap.init();
+
+function customEventHandler(event) {
+    // event.preventDefault();
+    table.createDescriptionEl(event.detail);
+}
+
+document.addEventListener("highlightedCountry", customEventHandler);

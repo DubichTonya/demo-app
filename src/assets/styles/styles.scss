@@ -2,6 +2,17 @@
 @import "roboto.scss";
 
 html {
-  font-family: "Roboto", sans-serif;
-  font-size: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 10px;
+}
+
+.wrapper {
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 25rem 1fr;
+}
+
+.app__country-list,
+.app__table {
+    border: 0.1rem solid #ccc;
 }
